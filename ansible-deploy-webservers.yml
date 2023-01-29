@@ -1,0 +1,86 @@
+---
+# Play 1
+- name: My first play
+  hosts: all
+  tasks:
+  - name: Ping my hosts
+    ansible.builtin.ping:
+
+# Play 2
+- name: Setting up an apache webserver on amazon-linux nodes
+  hosts: amazon-webservers
+  remote_user: root
+
+  tasks:
+  - name: Upgrade all packages in the webserver
+    ansible.builtin.yum:
+      name: '*'
+      state: latest
+  - name: Install the latest version of Apache
+    ansible.builtin.yum:
+      name: httpd
+      state: latest
+  - name: Start service httpd, if not started
+    ansible.builtin.service:
+      name: httpd
+      state: started
+  - name: Enable service httpd, and not touch the state
+    ansible.builtin.service:
+      name: httpd
+      enabled: yes
+  - name: Copy index.html file from controller to /var/www/html/ folder in nodes
+    ansible.builtin.copy:
+      src: /home/amazon-page/index.html
+      dest: /var/www/html/
+
+# Play 3
+- name: Setting up an apache webserver on ubuntu nodes
+  hosts: ubuntu-webservers
+  remote_user: root
+
+  tasks:
+  - name: Upgrade all packages in the webserver
+    ansible.builtin.apt:
+      name: '*'
+      state: latest
+  - name: Install the latest version of Apache
+    ansible.builtin.apt:
+      name: apache2
+      state: present
+  - name: Start service httpd, if not started
+    ansible.builtin.service:
+      name: apache2
+      state: started
+
+  - name: Copy index.html file from controller to /var/www/html/ folder in nodes
+    ansible.builtin.copy:
+      src: /home/ubuntu-page/index.html
+      dest: /var/www/html/
+
+  handlers:
+  - name: restart-apache
+    service:
+      name: apache2
+      state: restarted
+
+# Play 4
+- name: Installing GIT on Ubuntu servers
+  hosts: ubuntu-webservers
+  tasks:
+  - name: Update repository
+    apt_repository:
+      repo: 'ppa:git-core/ppa'
+      state: present
+  - name: Install git
+    apt:
+      name: git
+      state: present
+      update_cache: yes
+# Play 5
+- name: Installing GIT on Amazon-linux servers
+  hosts: amazon-webservers
+  tasks:
+  - name: Install the latest version of Git
+    ansible.builtin.yum:
+      name: git
+      state: latest
